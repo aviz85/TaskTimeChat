@@ -4,32 +4,25 @@ import Calendar from "@/components/Calendar";
 import TaskList from "@/components/TaskList";
 import ChatBot from "@/components/ChatBot";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import AuthForm from "@/components/AuthForm";
+import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
-  const { user, login, register, logout } = useUser();
-  const { toast } = useToast();
+  const { user, isLoading, logout } = useUser();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="w-full max-w-sm space-y-4 p-4">
-          <h1 className="text-2xl font-bold">Task Manager</h1>
-          <Button
-            onClick={() =>
-              login({ username: "demo", password: "demo" }).then((res) => {
-                if (!res.ok) {
-                  toast({
-                    title: "Error",
-                    description: res.message,
-                    variant: "destructive",
-                  });
-                }
-              })
-            }
-          >
-            Demo Login
-          </Button>
+          <AuthForm />
         </div>
       </div>
     );
