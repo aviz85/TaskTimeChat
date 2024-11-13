@@ -1,30 +1,31 @@
-import { pgTable, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, numeric } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { sql } from "drizzle-orm"
 
-export const users = pgTable("users", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").unique().notNull(),
   password: text("password").notNull(),
 });
 
-export const tasks = pgTable("tasks", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  userId: integer().references(() => users.id).notNull(),
+export const tasks = sqliteTable("tasks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").references(() => users.id).notNull(),
   title: text("title").notNull(),
   description: text("description"),
   priority: integer("priority").notNull().default(1),
-  completed: boolean("completed").default(false),
-  dueDate: timestamp("due_date"),
-  createdAt: timestamp("created_at").defaultNow(),
+  completed: integer("completed", { mode: "boolean" }).default(false),
+  dueDate: numeric("due_date"),
+  createdAt: numeric("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const chatMessages = pgTable("chat_messages", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  userId: integer().references(() => users.id).notNull(),
+export const chatMessages = sqliteTable("chat_messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").references(() => users.id).notNull(),
   message: text("message").notNull(),
-  isBot: boolean("is_bot").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
+  isBot: integer("is_bot", { mode: "boolean" }).default(false),
+  createdAt: numeric("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const insertUserSchema = createInsertSchema(users);
