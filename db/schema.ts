@@ -7,6 +7,8 @@ export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").unique().notNull(),
   password: text("password").notNull(),
+  phoneCountryCode: text("phone_country_code").notNull(),
+  phoneNumber: text("phone_number").notNull(),
 });
 
 export const tasks = sqliteTable("tasks", {
@@ -28,7 +30,18 @@ export const chatMessages = sqliteTable("chat_messages", {
   createdAt: numeric("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const insertUserSchema = createInsertSchema(users);
+export const insertUserSchema = createInsertSchema(users, {
+  phoneCountryCode: z.string().regex(/^\+\d{1,4}$/),
+  phoneNumber: z
+    .string()
+    .min(9)
+    .max(15)
+    .regex(/^[\d-]+$/, { message: "Phone number can only contain digits and hyphens" })
+    .transform((val) => {
+      const cleaned = val.replace(/[-\s]/g, '');
+      return cleaned.replace(/^0+/, '');
+    }),
+});
 export const selectUserSchema = createSelectSchema(users);
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = z.infer<typeof selectUserSchema>;

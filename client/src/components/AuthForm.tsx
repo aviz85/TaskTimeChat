@@ -21,6 +21,8 @@ import {
 import { useState } from "react";
 import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -33,13 +35,21 @@ export default function AuthForm() {
     defaultValues: {
       username: "",
       password: "",
+      phoneCountryCode: "+972",
+      phoneNumber: "",
     },
   });
 
   const onSubmit = async (data: InsertUser) => {
     setIsLoading(true);
     try {
-      const result = await (isLogin ? login(data) : registerUser(data));
+      const result = await (isLogin 
+        ? login({ 
+            username: data.username, 
+            password: data.password 
+          }) 
+        : registerUser(data));
+
       if (!result.ok) {
         toast({
           title: "Error",
@@ -106,6 +116,49 @@ export default function AuthForm() {
                 </FormItem>
               )}
             />
+            
+            {!isLogin && (
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <div className="flex gap-2">
+                        <div className="w-[4.5rem]">
+                          <PhoneInput
+                            country={'il'}
+                            enableSearch
+                            containerClass="!w-full"
+                            inputClass="hidden"
+                            buttonClass="!w-full !h-10 !border !border-input !rounded-md"
+                            dropdownClass="!w-[250px]"
+                            onChange={(_, data: any) => {
+                              form.setValue('phoneCountryCode', `+${data.dialCode}`);
+                            }}
+                            disabled={isLoading}
+                          />
+                        </div>
+                        <FormControl className="flex-1">
+                          <Input
+                            placeholder="Enter your phone number"
+                            {...field}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^\d-]/g, '');
+                              field.onChange(value);
+                            }}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLogin ? "Login" : "Register"}

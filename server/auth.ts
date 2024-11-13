@@ -107,7 +107,7 @@ export function setupAuth(app: Express) {
           .json({ message: "Invalid input", errors: result.error.flatten() });
       }
 
-      const { username, password } = result.data;
+      const { username, password, phoneCountryCode, phoneNumber } = result.data;
 
       // Check if user already exists
       const [existingUser] = await db
@@ -129,6 +129,8 @@ export function setupAuth(app: Express) {
         .values({
           username,
           password: hashedPassword,
+          phoneCountryCode,
+          phoneNumber,
         })
         .returning();
 
